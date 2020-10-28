@@ -3,9 +3,12 @@ package org.wjw.rpc.center;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.NodeCache;
+import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
@@ -48,10 +51,10 @@ public class ZKClient {
     public void createNode(String path, String data, CreateMode mode) throws Exception {
         Stat stat = cf.checkExists().forPath(path);
         if (Objects.isNull(stat)) {
-            cf.create().creatingParentsIfNeeded().withMode(mode).forPath(path, data.getBytes());
             addListener(path);
+        } else {
+            path = path + "/ch/" + UUID.randomUUID().toString().substring(5, 15);
         }
-        path = path + "/ch/" + UUID.randomUUID().toString().substring(5, 15);
         cf.create().creatingParentsIfNeeded().withMode(mode).forPath(path, data.getBytes());
     }
 
